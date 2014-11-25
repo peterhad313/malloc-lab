@@ -26,13 +26,13 @@ team_t team = {
     /* Team name */
     "ateam",
     /* First member's full name */
-    "Harry Bovik",
+    "Peter Haddad",
     /* First member's email address */
-    "bovik@cs.cmu.edu",
+    "peterhaddad2016@u.northwestern.edu",
     /* Second member's full name (leave blank if none) */
-    "",
+    "Jacob Kobza",
     /* Second member's email address (leave blank if none) */
-    ""
+    "jacobkobza2016@u.northwestern.edu"
 };
 
 /* single word (4) or double word (8) alignment */
