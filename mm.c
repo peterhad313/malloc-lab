@@ -78,7 +78,8 @@ team_t team = {
 /* Global declarations */
 static char *heap_listp = 0; 
 static char *free_listp = 0;
-void *free_lists[LISTS]; /* Array of pointers to segregated free lists */
+//Reference below for what kind of array we want to create implicitly using pointers
+//void *free_lists[LISTS]; /* Array of pointers to segregated free lists */
 void *seg_listp;
 char *prologue_block;    /* Pointer to prologue block */
 
@@ -414,7 +415,7 @@ static void insert_node(void *bp, size_t size)
 	listNum++;
   }
   
-  sptr = free_lists[listNum];
+  sptr = *(seg_listp + listNum);
   
   while ((sptr != NULL) && (size > GET_SIZE(HDRP(sptr))))
   {
@@ -451,7 +452,7 @@ static void insert_node(void *bp, size_t size)
 	  STORE(PRED_PTR(bp), NULL);
 	  STORE(SUCC_PTR(bp), NULL);
 	  
-	  free_lists[listNum] = ptr;
+	  *(seg_listp + listNum) = bp;
 	  
 	}
   }
@@ -481,7 +482,7 @@ static void delete_node(void *bp)
 	else
 	{
 	  STORE(SUCC_PTR(PRED(bp)), NULL);
-	  free_lists[listNum] = PRED(bp);
+	  *(seg_listp + listNum) = PRED(bp);
 	}
   }
   else
@@ -492,7 +493,7 @@ static void delete_node(void *bp)
 	}
 	else
 	{
-	  free_lists[listNum] = NULL;
+	  *(seg_listp + listNum) = NULL;
 	}
   }
   
