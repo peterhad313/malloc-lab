@@ -73,6 +73,10 @@ team_t team = {
 #define SET_NEXT_FREE(bp, qp) (GET_NEXT_FREE(bp) = qp)
 #define SET_PREV_FREE(bp, qp) (GET_PREV_FREE(bp) = qp)
 
+/* Address of next and previous blocks */
+#define NEXT(ptr) ((char *)(ptr) + GET_SIZE((char *)(ptr) - WSIZE))
+#define PREV(ptr) ((char *)(ptr) - GET_SIZE((char *)(ptr) - DSIZE))
+
 #define LISTS     20      /* Number of segregated lists */
 
 /* Global declarations */
@@ -80,7 +84,7 @@ static char *heap_listp = 0;
 static char *free_listp = 0;
 //Reference below for what kind of array we want to create implicitly using pointers
 //void *free_lists[LISTS]; /* Array of pointers to segregated free lists */
-void *seg_listp;
+int *seg_listp;
 char *prologue_block;    /* Pointer to prologue block */
 
 /* Function prototypes for internal helper routines */
@@ -106,11 +110,11 @@ static void printblock(void *bp);
 int mm_init(void) {
   
   int listNum;
-  void *seg = heap_listp + 4*WSIZE;
+  int *seg = heap_listp + 4*WSIZE;
   
   for (listNum = 0; listNum < LISTS; listNum++)
   {
-	*(seg + listNum) = NULL
+	*(seg + listNum) = NULL;
   }
   
   /* Create the initial empty heap. */
@@ -158,7 +162,7 @@ void *mm_malloc(size_t size)
 	if ((listNum == LISTS - 1) || (asize <= 1) && (*(seg_listp + listNum) != NULL))
 	{
 	  bp = *(seg_listp + listNum);
-	  while ((bp != NULL) && ((asize > GET_SIZE(HDRP(bp))
+	  while ((bp != NULL) && (asize > GET_SIZE(HDRP(bp))))
 	  {
 		bp = PRED(bp);
 	  }
@@ -209,7 +213,7 @@ void mm_free(void *bp){
   PUT(HDRP(bp), PACK(size, 0));
   PUT(FTRP(bp), PACK(size, 0));
   
-  insert_node(ptr, size);
+  insert_node(bp, size);
   
   coalesce(bp);
   
@@ -349,7 +353,7 @@ static void *coalesce(void *bp){
   size_t size = GET_SIZE(HDRP(bp));
   
   /*return if the previous and next blocks are both allocated */
-  if (prev_alloc && next_alloc)
+  if (PREV_ALLOC && NEXT_ALLOC)
   {
 	return bp;
   }
@@ -368,8 +372,8 @@ static void *coalesce(void *bp){
   {
 	delete_node(PREV_BLK(bp));
 	size += GET_SIZE(HDRP(PREV_BLK(bp)));
-	PUT(FTRP(bp), PACK(size, 0);
-	PUT(HDRP(PREV_BLK(bp), PACK(size, 0);
+	PUT(FTRP(bp), PACK(size, 0));
+	PUT(HDRP(PREV_BLK(bp)), PACK(size, 0));
 	bp = PREV(bp);
   }
   else
@@ -476,8 +480,8 @@ static void delete_node(void *bp)
   {
 	if (SUCC(bp) != NULL)
 	{
-	  STORE(SUCC_PTR(PRED(bp)), SUCC(ptr));
-	  STORE(PRED_PTR(SUCC(bp)), PRED(ptr));
+	  STORE(SUCC_PTR(PRED(bp)), SUCC(bp));
+	  STORE(PRED_PTR(SUCC(bp)), PRED(bp));
 	}
 	else
 	{
